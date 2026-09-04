@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ movie.title }} - Boxedlettr</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.6; background-color:#14171c; color:#c6cacf }
+        .header-section { display: flex; gap: 20px; margin-bottom: 20px; }
+        .header-section img { max-width: 250px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .info-list { list-style: none; padding: 0; }
+        .info-list li { margin-bottom: 10px; }
+        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #0066cc; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'movies' %}" class="back-link">&laquo; Tüm Filmlere Dön</a>
+
+    <div class="header-section">
+        {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }} Poster">
+        {% endif %}
+
+        <div>
+            <h1 style="color: #fff;">{{ movie.title }}</h1>
+            <ul class="info-list">
+                <li><strong>Yönetmen:</strong> {{ movie.director|default:"Bilinmiyor" }}</li>
+                <li><strong>Oyuncular:</strong> {{ movie.cast|default:"Bilinmiyor" }}</li>
+                <li><strong>Tür:</strong> {{ movie.genres|default:"Bilinmiyor" }}</li>
+                <li><strong>Stüdyo:</strong> {{ movie.studio|default:"Bilinmiyor" }}</li>
+                <li><strong>Ülke:</strong> {{ movie.country|default:"Bilinmiyor" }}</li>
+                <li><strong>Vizyon Tarihi:</strong> {{ movie.release_date|date:"d F Y" }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <h3>Özet</h3>
+    <p>{{ movie.description }}</p>
+
+    <hr style="margin: 30px 0; border: 1px solid #2c3643;">
+
+    <!-- ORTALAMA PUAN -->
+    <h2>Ortalama Puan: <span style="color: #f39c12; font-size: 1.5em;">★ {{ movie.average_rating }}</span><span style="font-size: 0.8em; color: #888;">/10</span></h2>
+
+    <!-- İNCELEME YAPMA FORMU -->
+    {% if user.is_authenticated %}
+        <div style="background: #1f2730; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #2c3643;">
+            <h3 style="color: #00e054; margin-top: 0;">
+                {% if user_review %}İncelemeni Güncelle{% else %}İnceleme Yaz{% endif %}
+            </h3>
+
+            <!-- EĞER FORMDA BİR HATA VARSA BURADA KIRMIZIYLA YAZACAK -->
+            {% if form.errors %}
+                <div style="background-color: #e50914; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                    Lütfen girdiğiniz bilgileri kontrol edin: {{ form.errors }}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" style="background: #00e054; color: #000; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    {% if user_review %}Güncelle{% else %}Gönder{% endif %}
+                </button>
+            </form>
+        </div>
+    {% else %}
+        <p>İnceleme yazmak için <a href="{% url 'home' %}" style="color: #00e054;">giriş yapmalısınız</a>.</p>
+    {% endif %}
+
+    <!-- YAPILAN İNCELEMELER LİSTESİ (Çift olan silindi, sadece şık olan bırakıldı) -->
+    <h2 style="color: #00e054;">Kullanıcı İncelemeleri ({{ reviews.count }})</h2>
+
+    <div style="margin-top: 20px;">
+        {% for review in reviews %}
+            <div style="background: #1f2730; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #2c3643;">
+
+                <p style="margin: 0;">
+                    <strong><a href="{% url 'user_profile' review.user.username %}" style="color: #00e054; text-decoration: none; font-size: 1.1em;">{{ review.user.username }}</a></strong>
+                    <span style="color: #fff; margin-left: 10px;">★ {{ review.rating }}/10</span>
+                    <span style="color: #888; font-size: 0.8em; margin-left: 10px;">{{ review.created_at|date:"d M Y" }}</span>
+                </p>
+
+                {% if review.content %}
+                    <p style="color: #a9b5c2; margin-top: 15px; line-height: 1.5; font-style: italic;">"{{ review.content }}"</p>
+                {% endif %}
+
+            </div>
+        {% empty %}
+            <p style="color: #a9b5c2;">Bu filme henüz hiç inceleme yazılmamış. İlk yazan siz olun!</p>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

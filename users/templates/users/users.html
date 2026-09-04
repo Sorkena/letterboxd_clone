@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcılar - Boxedlettr</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #14171c; color: #fff; }
+        .btn { display: inline-block; padding: 5px 15px; background: #00e054; color: #171717; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
+        .btn:hover { background: #00b341; }
+
+        .user-grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        .user-card { background: #1f2730; padding: 20px; border-radius: 8px; min-width: 200px; text-align: center; border: 1px solid #2c3643; }
+        .user-card h3 { margin-top: 0; color: #fff; font-size: 1.5em; margin-bottom: 5px; }
+        .user-card p { color: #a9b5c2; font-size: 0.9em; margin-bottom: 20px; }
+
+        .user-link { display: inline-block; padding: 8px 15px; background: #2b7bb9; color: #fff; text-decoration: none; border-radius: 4px; font-size: 0.9em; }
+        .user-link:hover { background: #1e5a8a; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'home' %}" class="btn">&laquo; Ana Sayfa</a>
+
+    <h1 style="color: #00e054;">Boxedlettr Üyeleri</h1>
+    <p style="color: #a9b5c2; margin-bottom: 30px;">Platformumuza kayıtlı tüm kullanıcıları aşağıdan inceleyebilirsiniz.</p>
+
+    <div class="user-grid">
+        <!-- Veritabanındaki tüm kullanıcıları döngüye sokuyoruz -->
+        {% for u in all_users %}
+            <div class="user-card">
+                <h3>{{ u.username }}</h3>
+                <p>Katılım: {{ u.date_joined|date:"Y" }}</p>
+
+                <!-- Otomatik olarak oluşturulan kendi profillerine giden link -->
+                <a href="{% url 'user_profile' u.username %}" class="user-link">Profili Görüntüle</a>
+            </div>
+        {% empty %}
+            <p>Henüz kayıtlı kullanıcı bulunmuyor.</p>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

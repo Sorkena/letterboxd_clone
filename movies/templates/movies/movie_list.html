@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Popüler Filmler</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #14171c; color: #c6cacf; }
+        .movie-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .movie-card { border: 1px solid #7f8581; padding: 15px; width: 250px; border-radius: 8px; }
+        .movie-card img { max-width: 100%; border-radius: 4px; }
+        .pagination { margin-top: 30px; text-align: center; font-size: 1.1em; color: #7f8581 }
+        .pagination a { margin: 0 5px; text-decoration: none; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; color: #7f8581; }
+        .pagination .current { margin: 0 10px; font-weight: bold; }
+        .btn { display: inline-block; padding: 5px 15px; background: #00e054; color: #252525; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
+
+        .movie-link { text-decoration: none; color: inherit; }
+        .movie-link:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'home' %}" class="btn">&laquo; Ana Sayfa</a>
+    <h1>Film Listesi</h1>
+
+    <!-- 1. FİLMLERİ LİSTELEME KISMI -->
+    <div class="movie-container">
+        {% for movie in page_obj %}
+            <div class="movie-card">
+
+                <!-- TIKLANABİLİR LİNK BAŞLANGICI -->
+                <a href="{% if movie.slug %}{% url 'movie_detail' movie.slug %}{% else %}#{% endif %}" class="movie-link">
+                    {% if movie.poster_url %}
+                        <img src="{{ movie.poster_url }}" alt="{{ movie.title }} Afişi">
+                    {% endif %}
+                    <h3>{{ movie.title }}</h3>
+                </a>
+
+
+                <p><strong>Çıkış:</strong> {{ movie.release_date|date:"d M Y" }}</p>
+                <p>{{ movie.description|truncatewords:20 }}</p>
+            </div>
+        {% empty %}
+            <p>Veritabanında hiç film bulunamadı.</p>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        <span class="step-links">
+
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; İlk</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+            {% endif %}
+
+            <span class="current">
+                Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Sonraki</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Son &raquo;</a>
+            {% endif %}
+
+        </span>
+    </div>
+
+</body>
+</html>
