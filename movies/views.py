@@ -49,12 +49,12 @@ def movie_detail(request, slug):
             return redirect('home')
 
         if 'watchlist_add' in request.POST:
-            watchlist, _ = Watchlist.objects.get_or_create(user=request.user)
+            watchlist, a = Watchlist.objects.get_or_create(user=request.user)
             watchlist.movies.add(movie)
             return redirect('movie_detail', slug=movie.slug)
 
         if 'watchlist_remove' in request.POST:
-            watchlist, _ = Watchlist.objects.get_or_create(user=request.user)
+            watchlist, a = Watchlist.objects.get_or_create(user=request.user)
             watchlist.movies.remove(movie)
             return redirect('movie_detail', slug=movie.slug)
 
