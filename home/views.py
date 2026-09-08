@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login
-
+from django.db.models import Max
 from movies.models import Movie
 
 
@@ -23,7 +23,12 @@ def home_page(request):
                 user = login_form.get_user()
                 login(request, user)
                 return redirect('home')
-    recent_movies = list(Movie.objects.filter(reviews__isnull=False).distinct().order_by('-reviews__reviewed_at')[:3])
+
+    recent_movies = list(
+        Movie.objects.filter(reviews__isnull=False)
+        .annotate(latest_review=Max('reviews__reviewed_at'))
+        .order_by('-latest_review')[:3]
+    )
 
     if len(recent_movies) < 3:
             exclude_ids = [m.id for m in recent_movies]

@@ -19,14 +19,34 @@
 </head>
 <body>
     <a href="{% url 'home' %}" class="btn">&laquo; Ana Sayfa</a>
-    <h1>Film Listesi</h1>
+    <!-- BAŞLIK VE ARAMA ÇUBUĞU KISMI -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
 
-    <!-- 1. FİLMLERİ LİSTELEME KISMI -->
+        <h1 style="color: #d7d9da; margin: 0;">Filmler</h1>
+
+
+        <form method="GET" action="{% url 'movies' %}" style="display: flex; gap: 10px;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Film ara..." style="padding: 10px; width: 250px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; box-sizing: border-box;">
+
+            <button type="submit" style="background: #00e054; color: #000; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Ara
+            </button>
+
+            <!-- Eğer arama yapılmışsa "Aramayı Temizle" butonu çıksın -->
+            {% if query %}
+                <a href="{% url 'movies' %}" style="background: #e50914; color: #fff; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: bold; display: flex; align-items: center;">
+                    X
+                </a>
+            {% endif %}
+        </form>
+
+    </div>
+
+
     <div class="movie-container">
         {% for movie in page_obj %}
             <div class="movie-card">
 
-                <!-- TIKLANABİLİR LİNK BAŞLANGICI -->
                 <a href="{% if movie.slug %}{% url 'movie_detail' movie.slug %}{% else %}#{% endif %}" class="movie-link">
                     {% if movie.poster_url %}
                         <img src="{{ movie.poster_url }}" alt="{{ movie.title }} Afişi">
@@ -56,8 +76,8 @@
             </span>
 
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">Sonraki</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">Son &raquo;</a>
+                <a href="?page={{ page_obj.next_page_number }}&q={{ query }}">Sonraki</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}">Son &raquo;</a>
             {% endif %}
 
         </span>

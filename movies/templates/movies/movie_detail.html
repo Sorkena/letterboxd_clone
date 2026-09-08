@@ -47,7 +47,7 @@
     {% if user.is_authenticated %}
         <div style="background: #1f2730; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #2c3643;">
             <h3 style="color: #00e054; margin-top: 0;">
-                {% if user_review %}İncelemeni Güncelle{% else %}İnceleme Yaz{% endif %}
+                {% if user_has_reviewed %}İncelemeni Güncelle{% else %}İnceleme Yaz{% endif %}
             </h3>
 
             <!-- EĞER FORMDA BİR HATA VARSA BURADA KIRMIZIYLA YAZACAK -->
@@ -61,13 +61,42 @@
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit" style="background: #00e054; color: #000; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                    {% if user_review %}Güncelle{% else %}Gönder{% endif %}
+                    {% if user_has_reviewed %}Güncelle{% else %}Gönder{% endif %}
                 </button>
+                {% if user_has_reviewed %}
+                    <button type="submit" name="delete" onclick="return confirm('Bu incelemeyi silmek istediğinize emin misiniz?');" style="background: #e50914; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        Sil
+                    </button>
+                {% endif %}
             </form>
         </div>
     {% else %}
         <p>İnceleme yazmak için <a href="{% url 'home' %}" style="color: #00e054;">giriş yapmalısınız</a>.</p>
     {% endif %}
+
+    <div>
+            <h1 style="color: #fff; margin-bottom: 5px;">{{ movie.title }}</h1>
+
+            <!-- WATCHLIST BUTONLARI (EKLE / ÇIKAR) -->
+            {% if user.is_authenticated %}
+                <form method="POST" style="margin-bottom: 20px;">
+                    {% csrf_token %}
+
+                    {% if in_watchlist %}
+                        <!-- EĞER FİLM LİSTEDEYSE: Kırmızı "Çıkar" butonu görünür -->
+                        <button type="submit" name="watchlist_remove" style="background: #e50914; color: #fff; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                            - Watchlist'ten Çıkar
+                        </button>
+                    {% else %}
+                        <!-- EĞER FİLM LİSTEDE DEĞİLSE: Yeşil "Ekle" butonu görünür -->
+                        <button type="submit" name="watchlist_add" style="background: #1f2730; color: #00e054; border: 1px solid #00e054; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                            + Watchlist'e Ekle
+                        </button>
+                    {% endif %}
+                </form>
+            {% endif %}
+            <ul class="info-list">
+    </div>
 
     <!-- YAPILAN İNCELEMELER LİSTESİ (Çift olan silindi, sadece şık olan bırakıldı) -->
     <h2 style="color: #00e054;">Kullanıcı İncelemeleri ({{ reviews.count }})</h2>
@@ -79,7 +108,7 @@
                 <p style="margin: 0;">
                     <strong><a href="{% url 'user_profile' review.user.username %}" style="color: #00e054; text-decoration: none; font-size: 1.1em;">{{ review.user.username }}</a></strong>
                     <span style="color: #fff; margin-left: 10px;">★ {{ review.rating }}/10</span>
-                    <span style="color: #888; font-size: 0.8em; margin-left: 10px;">{{ review.created_at|date:"d M Y" }}</span>
+                    <span style="color: #888; font-size: 0.8em; margin-left: 10px;">{{ review.reviewed_at|date:"d M Y" }}</span>
                 </p>
 
                 {% if review.content %}

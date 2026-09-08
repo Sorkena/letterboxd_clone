@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-
+from .models import Watchlist
 from movies.models import Review
 
 
@@ -14,8 +14,12 @@ def users(request):
 def user_profile(request, username):
     profile_user = get_object_or_404(User, username=username)
     user_reviews = Review.objects.filter(user=profile_user).order_by('-reviewed_at')
+    watchlist_movies = []
+    if hasattr(profile_user, 'watchlist'):
+        watchlist_movies = profile_user.watchlist.movies.all()
 
     return render(request, 'users/profile.html', {
         'profile_user': profile_user,
-        'user_reviews': user_reviews
+        'user_reviews': user_reviews,
+        'watchlist_movies': watchlist_movies
     })
