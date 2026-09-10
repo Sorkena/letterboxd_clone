@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Yeni Liste Oluştur - Boxedlettr</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; line-height: 1.6; background-color:#14171c; color:#c6cacf }
+        .form-container { background: #1f2730; padding: 25px; border-radius: 8px; border: 1px solid #2c3643; }
+        input[type="text"], textarea { width: 100%; padding: 10px; background: #14171c; border: 1px solid #2c3643; color: #fff; border-radius: 4px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
+        label { display: block; margin-bottom: 5px; color: #00e054; font-weight: bold; }
+        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #0066cc; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'user_profile' user.username %}" class="back-link">&laquo; Profile Dön</a>
+
+    <h1 style="color: #fff;">
+    {% if custom_list %}
+        Listeyi Düzenle
+    {% else %}
+        Yeni Liste Oluştur
+    {% endif %}
+</h1>
+
+    <div class="form-container">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" style="background: #00e054; color: #000; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1em; margin-top: 10px;">
+    {% if custom_list %}
+        Değişiklikleri Kaydet
+    {% else %}
+        Listeyi Kaydet
+    {% endif %}
+</button>
+        </form>
+    </div>
+
+</body>
+</html>

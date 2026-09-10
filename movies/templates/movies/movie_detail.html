@@ -40,7 +40,6 @@
 
     <hr style="margin: 30px 0; border: 1px solid #2c3643;">
 
-    <!-- ORTALAMA PUAN -->
     <h2>Ortalama Puan: <span style="color: #f39c12; font-size: 1.5em;">★ {{ movie.average_rating }}</span><span style="font-size: 0.8em; color: #888;">/10</span></h2>
 
     <!-- İNCELEME YAPMA FORMU -->
@@ -83,12 +82,10 @@
                     {% csrf_token %}
 
                     {% if in_watchlist %}
-                        <!-- EĞER FİLM LİSTEDEYSE: Kırmızı "Çıkar" butonu görünür -->
                         <button type="submit" name="watchlist_remove" style="background: #e50914; color: #fff; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                             - Watchlist'ten Çıkar
                         </button>
                     {% else %}
-                        <!-- EĞER FİLM LİSTEDE DEĞİLSE: Yeşil "Ekle" butonu görünür -->
                         <button type="submit" name="watchlist_add" style="background: #1f2730; color: #00e054; border: 1px solid #00e054; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">
                             + Watchlist'e Ekle
                         </button>
@@ -97,6 +94,18 @@
             {% endif %}
             <ul class="info-list">
     </div>
+    {% if user_custom_lists %}
+                <form method="POST" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    {% csrf_token %}
+                    <select name="list_id" style="background: #1f2730; color: #fff; padding: 8px; border: 1px solid #2c3643; border-radius: 4px;">
+                        <option value="">Bir Listene Ekle...</option>
+                        {% for clist in user_custom_lists %}
+                            <option value="{{ clist.id }}">{{ clist.title }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" name="add_to_custom_list" style="background: #2b7bb9; color: #fff; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Ekle</button>
+                </form>
+            {% endif %}
 
     <!-- YAPILAN İNCELEMELER LİSTESİ (Çift olan silindi, sadece şık olan bırakıldı) -->
     <h2 style="color: #00e054;">Kullanıcı İncelemeleri ({{ reviews.count }})</h2>
