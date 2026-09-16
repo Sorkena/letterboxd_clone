@@ -1,87 +1,193 @@
 <!DOCTYPE html>
+
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Popüler Filmler</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #14171c; color: #c6cacf; }
-        .movie-container { display: flex; flex-wrap: wrap; gap: 20px; }
-        .movie-card { border: 1px solid #7f8581; padding: 15px; width: 250px; border-radius: 8px; }
-        .movie-card img { max-width: 100%; border-radius: 4px; }
-        .pagination { margin-top: 30px; text-align: center; font-size: 1.1em; color: #7f8581 }
-        .pagination a { margin: 0 5px; text-decoration: none; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; color: #7f8581; }
-        .pagination .current { margin: 0 10px; font-weight: bold; }
-        .btn { display: inline-block; padding: 5px 15px; background: #00e054; color: #252525; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
+    <title>Filmler</title>
 
-        .movie-link { text-decoration: none; color: inherit; }
-        .movie-link:hover { opacity: 0.8; }
-    </style>
+<style>
+    body { font-family: Arial, sans-serif; background-color: #14171c; color: #c6cacf; margin: 0; padding: 20px; }
+    .movie-container { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; width: 100%; }
+    .movie-card { border: 1px solid #7f8581; padding: 12px; border-radius: 8px; background-color: #1f2730; box-sizing: border-box; min-width: 0; }
+    .movie-card img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 4px; display: block; }
+    .movie-card h3 { margin: 12px 0 8px 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .movie-card p { margin: 8px 0; font-size: 0.9em; }
+    .movie-link { text-decoration: none; color: inherit; }
+    .movie-link:hover { opacity: 0.8; }
+    .pagination { margin-top: 30px; text-align: center; font-size: 1.1em; color: #7f8581; }
+    .pagination a { margin: 0 5px; text-decoration: none; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; color: #7f8581; }
+    .pagination a:hover { color: #00e054; border-color: #00e054; }
+    .pagination .current { margin: 0 10px; font-weight: bold; }
+    .btn { display: inline-block; padding: 5px 15px; background: #00e054; color: #252525; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
+    .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .search-input { padding: 10px; width: 250px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; box-sizing: border-box; }
+    .genre-select { padding: 10px; width: 180px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; }
+    .search-button { background: #00e054; color: #000; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .clear-button { background: #e50914; color: #fff; padding: 10px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+    @media (max-width: 1000px) { .movie-container { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 800px) { .movie-container { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .movie-container { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 400px) { .movie-container { grid-template-columns: 1fr; } }
+</style>
+
 </head>
+
 <body>
-    <a href="{% url 'home' %}" class="btn">&laquo; Ana Sayfa</a>
-    <!-- BAŞLIK VE ARAMA ÇUBUĞU KISMI -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
 
-        <h1 style="color: #d7d9da; margin: 0;">Filmler</h1>
+<a href="{% url 'home' %}" class="btn">
+    &laquo; Ana Sayfa
+</a>
+
+<!-- BAŞLIK + ARAMA + FİLTRE -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 20px; flex-wrap: wrap;">
+
+    <h1 style="color: #d7d9da; margin: 0;">
+        Filmler
+    </h1>
+
+    <form method="GET" action="{% url 'movies' %}" class="filter-form">
+
+        <input type="text" name="q" value="{{ query }}" placeholder="Film ara..." class="search-input">
+
+        <select name="genre" class="genre-select">
+
+            <option value="">
+                Tüm Türler
+            </option>
+
+            {% for item in genres %}
+                <option value="{{ item }}" {% if genre == item %}selected{% endif %}>
+                    {{ item }}
+                </option>
+            {% endfor %}
+
+        </select>
+
+        <button type="submit" class="search-button">
+            Ara / Filtrele
+        </button>
+
+        {% if query or genre %}
+            <a href="{% url 'movies' %}" class="clear-button">
+                X
+            </a>
+        {% endif %}
+
+    </form>
+
+</div>
 
 
-        <form method="GET" action="{% url 'movies' %}" style="display: flex; gap: 10px;">
-            <input type="text" name="q" value="{{ query }}" placeholder="Film ara..." style="padding: 10px; width: 250px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; box-sizing: border-box;">
+<!-- AKTİF FİLTRE -->
+{% if query or genre %}
 
-            <button type="submit" style="background: #00e054; color: #000; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                Ara
-            </button>
+    <div style="margin-bottom: 20px; color: #a9b5c2;">
 
-            <!-- Eğer arama yapılmışsa "Aramayı Temizle" butonu çıksın -->
-            {% if query %}
-                <a href="{% url 'movies' %}" style="background: #e50914; color: #fff; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: bold; display: flex; align-items: center;">
-                    X
-                </a>
-            {% endif %}
-        </form>
+        {% if query %}
+            Arama:
+            <strong style="color: #00e054;">
+                {{ query }}
+            </strong>
+        {% endif %}
+
+        {% if query and genre %}
+            &nbsp; | &nbsp;
+        {% endif %}
+
+        {% if genre %}
+            Tür:
+            <strong style="color: #00e054;">
+                {{ genre }}
+            </strong>
+        {% endif %}
 
     </div>
 
-
-    <div class="movie-container">
-        {% for movie in page_obj %}
-            <div class="movie-card">
-
-                <a href="{% if movie.slug %}{% url 'movie_detail' movie.slug %}{% else %}#{% endif %}" class="movie-link">
-                    {% if movie.poster_url %}
-                        <img src="{{ movie.poster_url }}" alt="{{ movie.title }} Afişi">
-                    {% endif %}
-                    <h3>{{ movie.title }}</h3>
-                </a>
+{% endif %}
 
 
-                <p><strong>Çıkış:</strong> {{ movie.release_date|date:"d M Y" }}</p>
-                <p>{{ movie.description|truncatewords:20 }}</p>
-            </div>
-        {% empty %}
-            <p>Veritabanında hiç film bulunamadı.</p>
-        {% endfor %}
-    </div>
+<!-- FİLMLER -->
+<div class="movie-container">
 
-    <div class="pagination">
-        <span class="step-links">
+    {% for movie in page_obj %}
 
-            {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; İlk</a>
-                <a href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+        <div class="movie-card">
+
+            <a href="{% if movie.slug %}{% url 'movie_detail' movie.slug %}{% else %}#{% endif %}" class="movie-link">
+
+                {% if movie.poster_url %}
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }} Afişi">
+                {% endif %}
+
+                <h3>
+                    {{ movie.title }}
+                </h3>
+
+            </a>
+
+            <p>
+                <strong>Çıkış:</strong>
+                {{ movie.release_date|date:"d M Y" }}
+            </p>
+
+            {% if movie.genres %}
+                <p>
+                    <strong>Tür:</strong>
+                    {{ movie.genres }}
+                </p>
             {% endif %}
 
-            <span class="current">
-                Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-            </span>
+            <p>
+                {{ movie.description|truncatewords:20 }}
+            </p>
 
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&q={{ query }}">Sonraki</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}">Son &raquo;</a>
-            {% endif %}
+        </div>
 
-        </span>
-    </div>
+    {% empty %}
+
+        <p>
+            Arama veya filtreleme sonucunda film bulunamadı.
+        </p>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- PAGINATION -->
+<div class="pagination">
+
+    {% if page_obj.has_previous %}
+
+        <a href="?page=1{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
+            &laquo; İlk
+        </a>
+
+        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
+            Önceki
+        </a>
+
+    {% endif %}
+
+
+    <span class="current">
+        Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+    </span>
+
+
+    {% if page_obj.has_next %}
+
+        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
+            Sonraki
+        </a>
+
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
+            Son &raquo;
+        </a>
+
+    {% endif %}
+
+</div>
 
 </body>
 </html>

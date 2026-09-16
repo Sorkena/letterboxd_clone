@@ -30,7 +30,7 @@ class Movie(models.Model):
 
     @property
     def average_rating(self):
-        avg = self.reviews.aggregate(Avg('rating'))['rating__avg']
+        avg = self.ratings.aggregate(Avg('rating'))['rating__avg']
         if avg is not None:
             return round(avg, 1)
         return 0.0
@@ -42,9 +42,24 @@ class Review(models.Model):
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     content = models.TextField(blank=True, null=True)
     reviewed_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return f"{self.user.username} {self.movie.title}"
+
+    @property
+    def is_updated(self):
+        return self.updated_at.replace(microsecond=0) > self.reviewed_at.replace(microsecond=0)
+
+class MovieRating(models.Model):
+    movie = models.ForeignKey(Movie,on_delete=models.CASCADE,related_name='ratings')
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='movie_ratings')
+    rating = models.IntegerField(validators=[MinValueValidator(1),MaxValueValidator(10)])
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('movie', 'user')
 
     def __str__(self):
-        return f"{self.user.username} {self.movie.title}"
+        return f"{self.user.username} - {self.movie.title}: {self.rating}"
