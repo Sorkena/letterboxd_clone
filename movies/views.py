@@ -180,11 +180,9 @@ class ReviewEditView(View):
             return redirect('movie_detail',slug=movie.slug)
 
         if 'update_review' in request.POST:
-            form = ReviewForm(request.POST,instance=review)
-            if form.is_valid():
-                review.content = form.cleaned_data['content']
-                review.save()
-                return redirect('movie_detail',slug=movie.slug)
+            review.content = request.POST.get('content', '')
+            review.save()
+            return redirect('movie_detail',slug=movie.slug)
 
         reviews = movie.reviews.all().order_by('-reviewed_at')
         current_rating = MovieRating.objects.filter(movie=movie,user=request.user).first()
