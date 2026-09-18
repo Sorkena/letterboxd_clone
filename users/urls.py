@@ -1,12 +1,10 @@
 from django.urls import path
-
 from . import views
 
 urlpatterns = [
-    path('', views.UsersListView.as_view(), name='users'),
-    path('liste-olustur/', views.CustomListCreateView.as_view(), name='custom_list_create'),
-    path('<str:username>/', views.UserProfileView.as_view(), name='user_profile'),
-    path('<str:username>/liste/<int:list_id>/', views.CustomListDetailView.as_view(), name='custom_list_detail'),
-    path('<str:username>/lists/<int:list_id>/edit/', views.CustomListUpdateView.as_view(), name='custom_list_edit'),
-    path('<str:username>/lists/<int:list_id>/delete/', views.CustomListDeleteView.as_view(), name='custom_list_delete'),
+    path('', views.UsersViewSet.as_view({'get': 'list'}), name='users'),
+    path('profile/<str:username>/', views.UserProfileViewSet.as_view({'get': 'profile'}), name='user_profile'),
+    path('lists/create/', views.CustomListViewSet.as_view({'get': 'create_list', 'post': 'create_list'}), name='custom_list_create'),
+    path('lists/<str:username>/<int:list_id>/', views.CustomListViewSet.as_view({'get': 'retrieve', 'post': 'retrieve'}), name='custom_list_detail'),
+    path('lists/<str:username>/<int:list_id>/edit/', views.CustomListViewSet.as_view({'get': 'edit', 'post': 'edit'}), name='custom_list_edit'),
 ]

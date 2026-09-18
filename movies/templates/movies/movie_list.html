@@ -8,7 +8,9 @@
 <style>
     body { font-family: Arial, sans-serif; background-color: #14171c; color: #c6cacf; margin: 0; padding: 20px; }
     .movie-container { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; width: 100%; }
-    .movie-card { border: 1px solid #7f8581; padding: 12px; border-radius: 8px; background-color: #1f2730; box-sizing: border-box; min-width: 0; }
+    .movie-card { border: 1px solid #7f8581; padding: 12px; border-radius: 8px; background-color: #1f2730; box-sizing: border-box; min-width: 0; opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease, border-color .2s ease, box-shadow .2s ease; }
+    .movie-card.visible { opacity: 1; transform: translateY(0); }
+    .movie-card:hover { border-color: #00e054; box-shadow: 0 8px 20px rgba(0,0,0,.2); }
     .movie-card img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 4px; display: block; }
     .movie-card h3 { margin: 12px 0 8px 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .movie-card p { margin: 8px 0; font-size: 0.9em; }
@@ -19,15 +21,30 @@
     .pagination a:hover { color: #00e054; border-color: #00e054; }
     .pagination .current { margin: 0 10px; font-weight: bold; }
     .btn { display: inline-block; padding: 5px 15px; background: #00e054; color: #252525; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
-    .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; opacity: 0; transform: translateY(-12px); animation: filterAppear .8s cubic-bezier(.22,1,.36,1) forwards; }
+    .filter-form > * { opacity: 0; transform: translateY(-6px); animation: filterItemAppear .5s cubic-bezier(.22,1,.36,1) forwards; }
+    .filter-form > *:nth-child(1) { animation-delay: .10s; }
+    .filter-form > *:nth-child(2) { animation-delay: .20s; }
+    .filter-form > *:nth-child(3) { animation-delay: .25s; }
+    .filter-form > *:nth-child(4) { animation-delay: .30s; }
+    .filter-form > *:nth-child(5) { animation-delay: .35s; }
+
+    @keyframes filterAppear { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes filterItemAppear { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
     .search-input { padding: 10px; width: 250px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; box-sizing: border-box; }
-    .genre-select { padding: 10px; width: 180px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; }
+    .genre-select { padding: 10px; width: 180px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; cursor: pointer; }
+    .sort-select { padding: 10px; width: 180px; background: #1f2730; border: 1px solid #2c3643; color: #fff; border-radius: 4px; cursor: pointer; }
     .search-button { background: #00e054; color: #000; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .search-button:hover { background: #00b341; }
     .clear-button { background: #e50914; color: #fff; padding: 10px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+    .clear-button:hover { background: #b80710; }
+    .active-filter { margin-bottom: 20px; color: #a9b5c2; }
+    @keyframes filterAppear { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 1000px) { .movie-container { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     @media (max-width: 800px) { .movie-container { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 600px) { .movie-container { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .movie-container { grid-template-columns: repeat(2, minmax(0, 1fr)); } .search-input, .genre-select, .sort-select { width: 100%; } }
     @media (max-width: 400px) { .movie-container { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { .filter-form, .movie-card { animation: none; transition: none; opacity: 1; transform: none; } }
 </style>
 
 </head>
@@ -38,156 +55,229 @@
     &laquo; Ana Sayfa
 </a>
 
-<!-- BAŞLIK + ARAMA + FİLTRE -->
+<!-- BAŞLIK + ARAMA + FİLTRE + SIRALAMA -->
+
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 20px; flex-wrap: wrap;">
 
-    <h1 style="color: #d7d9da; margin: 0;">
-        Filmler
-    </h1>
+<h1 style="color: #d7d9da; margin: 0;">
+    Filmler
+</h1>
 
-    <form method="GET" action="{% url 'movies' %}" class="filter-form">
+<form method="GET" action="{% url 'movies' %}" class="filter-form">
 
-        <input type="text" name="q" value="{{ query }}" placeholder="Film ara..." class="search-input">
+    <input type="text" name="q" value="{{ query }}" placeholder="Film ara..." class="search-input">
 
-        <select name="genre" class="genre-select">
+    <select name="genre" class="genre-select">
 
-            <option value="">
-                Tüm Türler
+        <option value="">
+            Tüm Türler
+        </option>
+
+        {% for item in genres %}
+            <option value="{{ item }}" {% if genre == item %}selected{% endif %}>
+                {{ item }}
             </option>
+        {% endfor %}
 
-            {% for item in genres %}
-                <option value="{{ item }}" {% if genre == item %}selected{% endif %}>
-                    {{ item }}
-                </option>
-            {% endfor %}
+    </select>
 
-        </select>
+    <select name="sort" class="sort-select">
 
-        <button type="submit" class="search-button">
-            Ara / Filtrele
-        </button>
+        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
+            En Yeni
+        </option>
 
-        {% if query or genre %}
-            <a href="{% url 'movies' %}" class="clear-button">
-                X
-            </a>
-        {% endif %}
+        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>
+            En Eski
+        </option>
 
-    </form>
+        <option value="highest_rated" {% if sort_by == 'highest_rated' %}selected{% endif %}>
+            En Yüksek Puanlı
+        </option>
+
+        <option value="lowest_rated" {% if sort_by == 'lowest_rated' %}selected{% endif %}>
+            En Düşük Puanlı
+        </option>
+
+        <option value="most_reviewed" {% if sort_by == 'most_reviewed' %}selected{% endif %}>
+            En Çok İnceleme Alan
+        </option>
+
+        <option value="least_reviewed" {% if sort_by == 'least_reviewed' %}selected{% endif %}>
+            En Az İnceleme Alan
+        </option>
+
+    </select>
+
+    <button type="submit" class="search-button">
+        Ara / Filtrele
+    </button>
+
+    {% if query or genre or sort_by != 'newest' %}
+        <a href="{% url 'movies' %}" class="clear-button">
+            X
+        </a>
+    {% endif %}
+
+</form>
 
 </div>
 
-
 <!-- AKTİF FİLTRE -->
-{% if query or genre %}
 
-    <div style="margin-bottom: 20px; color: #a9b5c2;">
+{% if query or genre or sort_by != 'newest' %}
 
-        {% if query %}
-            Arama:
-            <strong style="color: #00e054;">
-                {{ query }}
-            </strong>
-        {% endif %}
+<div class="active-filter">
 
-        {% if query and genre %}
+    {% if query %}
+        Arama:
+        <strong style="color: #00e054;">
+            {{ query }}
+        </strong>
+    {% endif %}
+
+    {% if query and genre %}
+        &nbsp; | &nbsp;
+    {% endif %}
+
+    {% if genre %}
+        Tür:
+        <strong style="color: #00e054;">
+            {{ genre }}
+        </strong>
+    {% endif %}
+
+    {% if sort_by != 'newest' %}
+        {% if query or genre %}
             &nbsp; | &nbsp;
         {% endif %}
 
-        {% if genre %}
-            Tür:
-            <strong style="color: #00e054;">
-                {{ genre }}
-            </strong>
+        Sıralama:
+        <strong style="color: #00e054;">
+            {% if sort_by == 'oldest' %}
+                En Eski
+            {% elif sort_by == 'highest_rated' %}
+                En Yüksek Puanlı
+            {% elif sort_by == 'lowest_rated' %}
+                En Düşük Puanlı
+            {% elif sort_by == 'most_reviewed' %}
+                En Çok İnceleme Alan
+            {% elif sort_by == 'least_reviewed' %}
+                En Az İnceleme Alan
+            {% endif %}
+        </strong>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+<!-- FİLMLER -->
+
+<div class="movie-container">
+
+{% for movie in page_obj %}
+
+    <div class="movie-card">
+
+        <a href="{% if movie.slug %}{% url 'movie_detail' movie.slug %}{% else %}#{% endif %}" class="movie-link">
+
+            {% if movie.poster_url %}
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }} Afişi">
+            {% else %}
+                <div style="width:100%; aspect-ratio:2/3; background:#14171c; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#aaa;">
+                    Afiş Yok
+                </div>
+            {% endif %}
+
+            <h3>
+                {{ movie.title }}
+            </h3>
+
+        </a>
+
+        <p>
+            <strong>Çıkış:</strong>
+            {{ movie.release_date|date:"d M Y" }}
+        </p>
+
+        {% if movie.genres %}
+            <p>
+                <strong>Tür:</strong>
+                {{ movie.genres }}
+            </p>
         {% endif %}
 
+        <p>
+            {{ movie.description|truncatewords:20 }}
+        </p>
+
     </div>
+
+{% empty %}
+
+    <p>
+        Arama veya filtreleme sonucunda film bulunamadı.
+    </p>
+
+{% endfor %}
+
+</div>
+
+<!-- PAGINATION -->
+
+<div class="pagination">
+
+{% if page_obj.has_previous %}
+
+    <a href="?page=1{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}{% if sort_by %}&sort={{ sort_by|urlencode }}{% endif %}">
+        &laquo; İlk
+    </a>
+
+    <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}{% if sort_by %}&sort={{ sort_by|urlencode }}{% endif %}">
+        Önceki
+    </a>
 
 {% endif %}
 
 
-<!-- FİLMLER -->
-<div class="movie-container">
+<span class="current">
+    Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+</span>
 
-    {% for movie in page_obj %}
 
-        <div class="movie-card">
+{% if page_obj.has_next %}
 
-            <a href="{% if movie.slug %}{% url 'movie_detail' movie.slug %}{% else %}#{% endif %}" class="movie-link">
+    <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}{% if sort_by %}&sort={{ sort_by|urlencode }}{% endif %}">
+        Sonraki
+    </a>
 
-                {% if movie.poster_url %}
-                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }} Afişi">
-                {% endif %}
+    <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}{% if sort_by %}&sort={{ sort_by|urlencode }}{% endif %}">
+        Son &raquo;
+    </a>
 
-                <h3>
-                    {{ movie.title }}
-                </h3>
-
-            </a>
-
-            <p>
-                <strong>Çıkış:</strong>
-                {{ movie.release_date|date:"d M Y" }}
-            </p>
-
-            {% if movie.genres %}
-                <p>
-                    <strong>Tür:</strong>
-                    {{ movie.genres }}
-                </p>
-            {% endif %}
-
-            <p>
-                {{ movie.description|truncatewords:20 }}
-            </p>
-
-        </div>
-
-    {% empty %}
-
-        <p>
-            Arama veya filtreleme sonucunda film bulunamadı.
-        </p>
-
-    {% endfor %}
+{% endif %}
 
 </div>
 
+<!-- SCROLL FADE-IN -->
 
-<!-- PAGINATION -->
-<div class="pagination">
+<script>
+    const movieCards = document.querySelectorAll('.movie-card');
 
-    {% if page_obj.has_previous %}
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.12
+    });
 
-        <a href="?page=1{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
-            &laquo; İlk
-        </a>
-
-        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
-            Önceki
-        </a>
-
-    {% endif %}
-
-
-    <span class="current">
-        Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-    </span>
-
-
-    {% if page_obj.has_next %}
-
-        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
-            Sonraki
-        </a>
-
-        <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query|urlencode }}{% endif %}{% if genre %}&genre={{ genre|urlencode }}{% endif %}">
-            Son &raquo;
-        </a>
-
-    {% endif %}
-
-</div>
+    movieCards.forEach(card => observer.observe(card));
+</script>
 
 </body>
 </html>

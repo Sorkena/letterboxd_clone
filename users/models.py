@@ -18,3 +18,17 @@ class CustomList(models.Model):
 
     def __str__(self):
         return self.title
+
+class Genre(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    interested_genres = models.ManyToManyField(Genre, blank=True, related_name='interested_users')
+
+    def __str__(self):
+        return self.user.username

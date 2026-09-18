@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.views import View
 from movies.models import Movie
+from users.forms import GenrePreferenceForm
+from users.models import UserProfile
 
 
 class HomePageView(View):
