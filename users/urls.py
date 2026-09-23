@@ -15,4 +15,11 @@ urlpatterns = [
     path('profile/<str:username>/unfollow/', views.FollowViewSet.as_view({'post': 'unfollow'}), name='unfollow_user'),
     path('profile/<str:username>/followers/', views.FollowViewSet.as_view({'get': 'followers'}), name='user_followers'),
     path('profile/<str:username>/following/', views.FollowViewSet.as_view({'get': 'following'}), name='user_following'),
+    path('profile/<str:username>/watched/',views.UserProfileViewSet.as_view({'get': 'watched'}),name='user_watched'),
+    path(
+    'profile/<str:username>/watched/',views.UserProfileViewSet.as_view({'get': 'watched'}),name='user_watched'),
+    path('profile/<str:username>/watchlist/',views.UserProfileViewSet.as_view({'get': 'watchlist'}),name='user_watchlist'),
+    path('profile/<str:username>/reviews/',views.UserProfileViewSet.as_view({'get': 'reviews'}),name='user_reviews'),
+    path('profile/<str:username>/lists/',views.CustomListViewSet.as_view({'get': 'all_lists'}),name='user_custom_lists'
+),
 ]

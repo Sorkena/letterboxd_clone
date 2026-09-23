@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - İzlenen Filmler{% endblock %}
+
+{% block extra_css %}
+
+<style>
+    .watched-page { max-width: 1100px; margin: 0 auto; }
+
+    .back-link { display: inline-block; margin-bottom: 25px; color: #8da8c0; text-decoration: none; }
+    .back-link:hover { color: #00e054; }
+
+    .page-title { color: #00e054; margin: 0 0 8px 0; }
+
+    .page-description { color: #a9b5c2; margin: 0 0 25px 0; }
+
+    .movie-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; }
+
+    .movie-card { background: #1f2730; border: 1px solid #2c3643; border-radius: 8px; padding: 12px; text-align: center; min-width: 0; opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease, border-color .2s ease, box-shadow .2s ease; }
+
+    .movie-card.visible { opacity: 1; transform: translateY(0); }
+
+    .movie-card:hover { border-color: #00e054; box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+
+    .movie-card a { color: #fff; text-decoration: none; }
+
+    .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 4px; display: block; }
+
+    .movie-title { margin: 12px 0 7px 0; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .movie-rating { color: #f39c12; font-weight: bold; margin: 0; }
+
+    .empty-text { color: #a9b5c2; }
+
+    .pagination { margin-top: 30px; text-align: center; color: #7f8581; }
+
+    .pagination a { display: inline-block; margin: 0 5px; padding: 6px 10px; color: #8da8c0; border: 1px solid #46515d; border-radius: 4px; text-decoration: none; }
+
+    .pagination a:hover { color: #00e054; border-color: #00e054; }
+
+    .pagination .current { display: inline-block; margin: 0 10px; font-weight: bold; }
+
+    @media (max-width: 1000px) {
+        .movie-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 800px) {
+        .movie-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 600px) {
+        .movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 400px) {
+        .movie-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .movie-card { opacity: 1; transform: none; transition: none; }
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="watched-page">
+
+    <a href="{% url 'user_profile' profile_user.username %}" class="back-link">
+        &laquo; {{ profile_user.username }} profiline dön
+    </a>
+
+
+    <h1 class="page-title">
+        İzlenen Filmler
+    </h1>
+
+
+    <p class="page-description">
+        {{ profile_user.username }} kullanıcısının puan verdiği filmler
+    </p>
+
+
+    <div class="movie-grid">
+
+        {% for movie_rating in page_obj %}
+
+            <div class="movie-card">
+
+                <a href="{% url 'movie_detail' movie_rating.movie.slug %}">
+
+                    {% if movie_rating.movie.poster_url %}
+
+                        <img src="{{ movie_rating.movie.poster_url }}" alt="{{ movie_rating.movie.title }}">
+
+                    {% else %}
+
+                        <div style="width: 100%; aspect-ratio: 2/3; background: #14171c; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa;">
+                            Afiş Yok
+                        </div>
+
+                    {% endif %}
+
+
+                    <p class="movie-title">
+                        {{ movie_rating.movie.title }}
+                    </p>
+
+                </a>
+
+
+                <p class="movie-rating">
+                    ★ {{ movie_rating.rating }}/10
+                </p>
+
+            </div>
+
+        {% empty %}
+
+            <p class="empty-text">
+                Bu kullanıcı henüz hiçbir filme puan vermemiş.
+            </p>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination">
+
+            {% if page_obj.has_previous %}
+
+                <a href="?page=1">
+                    &laquo; İlk
+                </a>
+
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    Önceki
+                </a>
+
+            {% endif %}
+
+
+            <span class="current">
+                Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+
+
+            {% if page_obj.has_next %}
+
+                <a href="?page={{ page_obj.next_page_number }}">
+                    Sonraki
+                </a>
+
+                <a href="?page={{ page_obj.paginator.num_pages }}">
+                    Son &raquo;
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    const movieCards = document.querySelectorAll('.movie-card');
+
+    const observer = new IntersectionObserver((entries, observer) => {
+
+        entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+
+        });
+
+    }, {
+        threshold: 0.12
+    });
+
+    movieCards.forEach(card => observer.observe(card));
+</script>
+
+{% endblock %}

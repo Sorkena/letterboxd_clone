@@ -5,57 +5,141 @@
 {% block extra_css %}
 
 <style>
-    .profile-card { background: #1f2730; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-    .profile-title { margin-top: 0; color: #00e054; font-size: 2.5em; }
+    .profile-card { background: #1f2730; padding: 20px; border-radius: 8px; margin-bottom: 20px; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; transition: border-color .2s ease, box-shadow .2s ease; }
+    .profile-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+
+    .profile-title { margin-top: 0; color: #00e054; font-size: 2.5em; animation: fadeIn .7s ease both; }
     .profile-subtitle { color: #a9b5c2; border-bottom: 1px solid #2c3643; padding-bottom: 15px; }
+
     .info-list { list-style: none; padding: 0; }
     .info-list li { margin-bottom: 10px; font-size: 1.1em; color: #a9b5c2; }
     .info-list strong { color: #fff; }
 
-    .follow-area { margin: 15px 0; }
-    .follow-button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .follow-area { margin: 15px 0; animation: fadeUp .6s .08s cubic-bezier(.22,1,.36,1) both; }
+
+    .follow-button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background .2s ease, transform .2s ease, box-shadow .2s ease; }
+    .follow-button:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,.2); }
+    .follow-button:active { transform: translateY(0); }
+
     .follow-button.follow { background: #00e054; color: #000; }
     .follow-button.follow:hover { background: #00b341; }
+
     .follow-button.unfollow { background: #e50914; color: #fff; }
     .follow-button.unfollow:hover { background: #b80710; }
 
-    .follow-stats { display: flex; gap: 20px; margin: 15px 0 30px 0; }
-    .follow-stats a { color: #fff; text-decoration: none; }
-    .follow-stats a:hover { color: #00e054; }
+    .follow-stats { display: flex; gap: 20px; margin: 15px 0 20px 0; animation: fadeUp .6s .12s cubic-bezier(.22,1,.36,1) both; }
+    .follow-stats a { color: #fff; text-decoration: none; transition: color .2s ease, transform .2s ease; }
+    .follow-stats a:hover { color: #00e054; transform: translateY(-1px); }
     .follow-stats strong { color: #00e054; }
 
-    .section-title { color: #00e054; margin-top: 40px; border-bottom: 1px solid #2c3643; padding-bottom: 10px; }
+    .profile-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0 30px 0; animation: fadeUp .6s .18s cubic-bezier(.22,1,.36,1) both; }
 
-    .review-box { background: #14171c; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #2c3643; }
+    .profile-tab { display: inline-block; background: #1f2730; color: #fff; padding: 10px 16px; border: 1px solid #2c3643; border-radius: 6px; text-decoration: none; font-weight: bold; transition: background .25s ease, border-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+    .profile-tab:hover { background: #283038; border-color: #00e054; transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,.18); }
+
+    .profile-tab-count { color: #00e054; margin-left: 5px; }
+
+    .section-title { color: #00e054; margin-top: 40px; border-bottom: 1px solid #2c3643; padding-bottom: 10px; animation: fadeUp .6s .22s cubic-bezier(.22,1,.36,1) both; }
+
+    .review-box { background: #14171c; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #2c3643; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+
+    .review-box:nth-child(1) { animation-delay: .25s; }
+    .review-box:nth-child(2) { animation-delay: .32s; }
+    .review-box:nth-child(3) { animation-delay: .39s; }
+
+    .review-box:hover { border-color: #46515d; transform: translateY(-3px); box-shadow: 0 7px 18px rgba(0,0,0,.18); }
+
     .review-box h3 { margin: 0 0 10px 0; }
-    .review-box h3 a { color: #fff; text-decoration: none; }
+    .review-box h3 a { color: #fff; text-decoration: none; transition: color .2s ease; }
     .review-box h3 a:hover { color: #00e054; }
-    .review-rating { margin: 0; color: #00e054; }
+
+    .review-rating { margin: 0; color: #f39c12; font-weight: bold; }
     .review-date { color: #888; font-size: 0.8em; margin-left: 10px; }
     .review-content { color: #a9b5c2; margin-top: 10px; }
 
-    .movie-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
-    .movie-card { background: #1f2730; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #2c3643; width: 120px; }
-    .movie-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3; object-fit: cover; display: block; }
-    .movie-card a { text-decoration: none; color: #fff; }
-    .movie-title { margin: 10px 0 0 0; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .all-reviews-link { display: inline-block; margin-top: 5px; color: #8da8c0; text-decoration: none; font-weight: bold; transition: color .2s ease, transform .2s ease; }
+    .all-reviews-link:hover { color: #00e054; transform: translateX(4px); }
 
-    .lists-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; border-bottom: 1px solid #2c3643; padding-bottom: 10px; }
+    .lists-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; border-bottom: 1px solid #2c3643; padding-bottom: 10px; animation: fadeUp .6s .35s cubic-bezier(.22,1,.36,1) both; }
     .lists-header h2 { color: #00e054; margin: 0; }
-    .new-list-button { background: #00e054; color: #000; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; }
-    .new-list-button:hover { background: #00b341; }
+
+    .new-list-button { background: #00e054; color: #000; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; transition: background .2s ease, transform .2s ease, box-shadow .2s ease; }
+    .new-list-button:hover { background: #00b341; transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,.2); }
+
     .list-container { list-style: none; padding: 0; margin-top: 20px; }
-    .list-item { background: #1f2730; padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #2c3643; }
-    .list-item a { color: #fff; text-decoration: none; font-size: 1.2em; font-weight: bold; }
+
+    .list-item { background: #1f2730; padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #2c3643; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+
+    .list-item:nth-child(1) { animation-delay: .40s; }
+    .list-item:nth-child(2) { animation-delay: .47s; }
+    .list-item:nth-child(3) { animation-delay: .54s; }
+
+    .list-item:hover { border-color: #46515d; transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.18); }
+
+    .list-item a { color: #fff; text-decoration: none; font-size: 1.2em; font-weight: bold; transition: color .2s ease; }
     .list-item a:hover { color: #00e054; }
+
     .list-count { color: #888; font-size: 0.9em; margin-left: 10px; }
 
-    .empty-text { color: #a9b5c2; }
+    .empty-text { color: #a9b5c2; animation: fadeIn .6s ease both; }
+
+    .genre-settings-button { display: inline-block; margin-top: 5px; padding: 6px 11px; background: transparent; color: #8da8c0; border: 1px solid #46515d; border-radius: 5px; text-decoration: none; font-size: 0.85em; transition: color .2s ease, border-color .2s ease, background .2s ease; }
+    .genre-settings-button:hover { color: #fff; border-color: #00e054; background: #283038; }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
 
     @media (max-width: 600px) {
         .follow-stats { gap: 15px; flex-wrap: wrap; }
-        .movie-card { width: 110px; }
+        .profile-tabs { flex-direction: column; }
+        .profile-tab { text-align: center; }
         .lists-header { align-items: flex-start; gap: 15px; flex-wrap: wrap; }
+        .profile-title { font-size: 2em; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .profile-card,
+        .profile-title,
+        .follow-area,
+        .follow-stats,
+        .profile-tabs,
+        .section-title,
+        .review-box,
+        .lists-header,
+        .list-item,
+        .empty-text {
+            animation: none;
+        }
+
+        .profile-card,
+        .follow-button,
+        .follow-stats a,
+        .profile-tab,
+        .review-box,
+        .all-reviews-link,
+        .new-list-button,
+        .list-item {
+            transition: none;
+        }
     }
 </style>
 
@@ -63,9 +147,6 @@
 
 
 {% block content %}
-
-
-
 
 <div class="profile-card">
 
@@ -78,6 +159,7 @@
     </p>
 
     <ul class="info-list">
+
         <li>
             <strong>Kayıt Tarihi:</strong>
             {{ profile_user.date_joined|date:"d F Y" }}
@@ -87,7 +169,16 @@
             <strong>Son Görülme:</strong>
             {{ profile_user.last_login|date:"d F Y, H:i" }}
         </li>
+
     </ul>
+
+    {% if request.user == profile_user %}
+
+    <a href="{% url 'onboarding' %}" class="genre-settings-button">
+        İlgi Alanlarını Düzenle
+    </a>
+
+{% endif %}
 
 </div>
 
@@ -99,21 +190,25 @@
         {% if is_following %}
 
             <form method="POST" action="{% url 'unfollow_user' profile_user.username %}">
+
                 {% csrf_token %}
 
                 <button type="submit" class="follow-button unfollow">
                     Takibi Bırak
                 </button>
+
             </form>
 
         {% else %}
 
             <form method="POST" action="{% url 'follow_user' profile_user.username %}">
+
                 {% csrf_token %}
 
                 <button type="submit" class="follow-button follow">
                     Takip Et
                 </button>
+
             </form>
 
         {% endif %}
@@ -126,11 +221,39 @@
 <div class="follow-stats">
 
     <a href="{% url 'user_followers' profile_user.username %}">
-        <strong>{{ followers_count }}</strong> Takipçi
+        <strong>{{ followers_count }}</strong>
+        Takipçi
     </a>
 
     <a href="{% url 'user_following' profile_user.username %}">
-        <strong>{{ following_count }}</strong> Takip
+        <strong>{{ following_count }}</strong>
+        Takip
+    </a>
+
+</div>
+
+
+<div class="profile-tabs">
+
+    <a href="{% url 'user_watched' profile_user.username %}" class="profile-tab">
+        İzlenenler
+        <span class="profile-tab-count">
+            {{ watched_count }}
+        </span>
+    </a>
+
+    <a href="{% url 'user_watchlist' profile_user.username %}" class="profile-tab">
+        Watchlist
+        <span class="profile-tab-count">
+            {{ watchlist_count }}
+        </span>
+    </a>
+
+    <a href="{% url 'user_reviews' profile_user.username %}" class="profile-tab">
+        İncelemeler
+        <span class="profile-tab-count">
+            {{ review_count }}
+        </span>
     </a>
 
 </div>
@@ -139,6 +262,7 @@
 <h2 class="section-title">
     Son İncelemeleri
 </h2>
+
 
 <div style="margin-top: 20px;">
 
@@ -153,11 +277,13 @@
             </h3>
 
             <p class="review-rating">
+
                 ★ {{ review.rating }}/10
 
                 <span class="review-date">
                     {{ review.reviewed_at|date:"d M Y" }}
                 </span>
+
             </p>
 
             {% if review.content %}
@@ -181,47 +307,13 @@
 </div>
 
 
-<h2 class="section-title">
-    Watchlist (İzlenecekler)
-</h2>
+{% if review_count > 3 %}
 
-<div class="movie-grid">
+    <a href="{% url 'user_reviews' profile_user.username %}" class="all-reviews-link">
+        Tüm incelemeleri gör →
+    </a>
 
-    {% for movie in watchlist_movies %}
-
-        <div class="movie-card">
-
-            <a href="{% url 'movie_detail' movie.slug %}">
-
-                {% if movie.poster_url %}
-
-                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}">
-
-                {% else %}
-
-                    <div style="width:100%; aspect-ratio:2/3; background:#14171c; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.8em;">
-                        Afiş Yok
-                    </div>
-
-                {% endif %}
-
-                <p class="movie-title">
-                    {{ movie.title }}
-                </p>
-
-            </a>
-
-        </div>
-
-    {% empty %}
-
-        <p class="empty-text">
-            Bu kullanıcının izleme listesi henüz boş.
-        </p>
-
-    {% endfor %}
-
-</div>
+{% endif %}
 
 
 <div class="lists-header">
@@ -252,7 +344,7 @@
             </a>
 
             <span class="list-count">
-                ({{ clist.movies.count }} film)
+                ({{ clist.movie_count }} film)
             </span>
 
         </li>
@@ -266,5 +358,14 @@
     {% endfor %}
 
 </ul>
+
+
+{% if custom_list_count > 3 %}
+
+    <a href="{% url 'user_custom_lists' profile_user.username %}" class="all-reviews-link">
+        Tüm listeleri gör →
+    </a>
+
+{% endif %}
 
 {% endblock %}

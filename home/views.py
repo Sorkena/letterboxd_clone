@@ -12,7 +12,7 @@ class HomeViewSet(viewsets.ViewSet):
         recent_movies = list(
             Movie.objects.filter(reviews__isnull=False)
             .annotate(latest_review=Max('reviews__reviewed_at'))
-            .order_by('-latest_review')[:3]
+            .order_by('-latest_review')[:5]
         )
 
         if len(recent_movies) < 3:
@@ -26,7 +26,7 @@ class HomeViewSet(viewsets.ViewSet):
         if not user.is_authenticated:
             return Review.objects.none()
         following_ids = user.following.values_list( 'following_id', flat=True )
-        return Review.objects.filter( user_id__in=following_ids ).select_related( 'user', 'movie' ).order_by( '-reviewed_at' )[:3]
+        return Review.objects.filter( user_id__in=following_ids ).select_related( 'user', 'movie' ).order_by( '-reviewed_at' )[:5]
 
     def get_recommended_movies(self, user):
         if not user.is_authenticated:
@@ -44,7 +44,7 @@ class HomeViewSet(viewsets.ViewSet):
         for genre in genres:
             query |= Q(genres__icontains=genre.name)
 
-        return Movie.objects.filter(query).distinct().order_by('?')[:5]
+        return Movie.objects.filter(query).exclude(ratings__user=user).distinct().order_by('?')[:5]
 
     def get_home_context(self, request, register_form=None, login_form=None):
         return {

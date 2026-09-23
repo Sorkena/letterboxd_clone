@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - İncelemeler{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reviews-page { max-width: 900px; margin: 0 auto; }
+    .back-link { display: inline-block; margin-bottom: 25px; color: #8da8c0; text-decoration: none; }
+    .back-link:hover { color: #00e054; }
+
+    .page-title { color: #00e054; margin: 0 0 25px 0; }
+
+    .review-box { background: #1f2730; padding: 18px; border-radius: 8px; border: 1px solid #2c3643; margin-bottom: 15px; }
+    .review-title { margin: 0 0 10px 0; }
+    .review-title a { color: #fff; text-decoration: none; }
+    .review-title a:hover { color: #00e054; }
+    .review-rating { color: #f39c12; font-weight: bold; }
+    .review-date { color: #888; font-size: 0.85em; margin-left: 10px; }
+    .review-content { color: #a9b5c2; line-height: 1.6; }
+
+    .pagination { margin-top: 30px; text-align: center; color: #7f8581; }
+    .pagination a { display: inline-block; margin: 0 5px; padding: 6px 10px; color: #8da8c0; border: 1px solid #46515d; border-radius: 4px; text-decoration: none; }
+    .pagination a:hover { color: #00e054; border-color: #00e054; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="reviews-page">
+
+    <a href="{% url 'user_profile' profile_user.username %}" class="back-link">
+        &laquo; {{ profile_user.username }} profiline dön
+    </a>
+
+    <h1 class="page-title">
+        İncelemeler
+    </h1>
+
+    {% for review in page_obj %}
+
+        <div class="review-box">
+
+            <h3 class="review-title">
+                <a href="{% url 'movie_detail' review.movie.slug %}">
+                    {{ review.movie.title }}
+                </a>
+            </h3>
+
+            <div>
+                <span class="review-rating">
+                    ★ {{ review.rating }}/10
+                </span>
+
+                <span class="review-date">
+                    {{ review.reviewed_at|date:"d M Y H:i" }}
+                </span>
+            </div>
+
+            {% if review.content %}
+                <p class="review-content">
+                    "{{ review.content }}"
+                </p>
+            {% endif %}
+
+        </div>
+
+    {% empty %}
+
+        <p style="color: #a9b5c2;">
+            Bu kullanıcının henüz incelemesi yok.
+        </p>
+
+    {% endfor %}
+
+
+    <div class="pagination">
+
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; İlk</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+        {% endif %}
+
+        <span>
+            Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Sonraki</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Son &raquo;</a>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

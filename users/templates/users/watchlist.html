@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - Watchlist{% endblock %}
+
+{% block extra_css %}
+<style>
+    .list-page { max-width: 1100px; margin: 0 auto; }
+    .back-link { display: inline-block; margin-bottom: 25px; color: #8da8c0; text-decoration: none; }
+    .back-link:hover { color: #00e054; }
+    .page-title { color: #00e054; margin: 0 0 8px 0; }
+    .page-description { color: #a9b5c2; margin: 0 0 25px 0; }
+
+    .movie-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; }
+    .movie-card { background: #1f2730; border: 1px solid #2c3643; border-radius: 8px; padding: 12px; text-align: center; min-width: 0; }
+    .movie-card:hover { border-color: #00e054; }
+    .movie-card a { color: #fff; text-decoration: none; }
+    .movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 4px; display: block; }
+    .movie-title { margin: 12px 0 0 0; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .pagination { margin-top: 30px; text-align: center; color: #7f8581; }
+    .pagination a { display: inline-block; margin: 0 5px; padding: 6px 10px; color: #8da8c0; border: 1px solid #46515d; border-radius: 4px; text-decoration: none; }
+    .pagination a:hover { color: #00e054; border-color: #00e054; }
+
+    @media (max-width: 1000px) { .movie-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    @media (max-width: 800px) { .movie-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 400px) { .movie-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="list-page">
+
+    <a href="{% url 'user_profile' profile_user.username %}" class="back-link">
+        &laquo; {{ profile_user.username }} profiline dön
+    </a>
+
+    <h1 class="page-title">
+        Watchlist
+    </h1>
+
+    <p class="page-description">
+        {{ profile_user.username }} kullanıcısının izlemek istediği filmler
+    </p>
+
+    <div class="movie-grid">
+
+        {% for movie in page_obj %}
+
+            <div class="movie-card">
+
+                <a href="{% url 'movie_detail' movie.slug %}">
+
+                    {% if movie.poster_url %}
+                        <img src="{{ movie.poster_url }}" alt="{{ movie.title }}">
+                    {% else %}
+                        <div style="width:100%; aspect-ratio:2/3; background:#14171c; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#aaa;">
+                            Afiş Yok
+                        </div>
+                    {% endif %}
+
+                    <p class="movie-title">
+                        {{ movie.title }}
+                    </p>
+
+                </a>
+
+            </div>
+
+        {% empty %}
+
+            <p style="color: #a9b5c2;">
+                Bu kullanıcının Watchlist'i boş.
+            </p>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="pagination">
+
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; İlk</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+        {% endif %}
+
+        <span>
+            Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Sonraki</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Son &raquo;</a>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

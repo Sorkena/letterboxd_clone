@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - Özel Listeler{% endblock %}
+
+{% block extra_css %}
+
+<style>
+    .lists-page { max-width: 900px; margin: 0 auto; }
+
+    .back-link { display: inline-block; margin-bottom: 25px; color: #8da8c0; text-decoration: none; }
+    .back-link:hover { color: #00e054; }
+
+    .page-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
+
+    .page-title { color: #00e054; margin: 0; }
+
+    .new-list-button { background: #00e054; color: #000; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+    .new-list-button:hover { background: #00b341; }
+
+    .list-container { display: flex; flex-direction: column; gap: 12px; }
+
+    .list-item { display: flex; align-items: center; justify-content: space-between; gap: 15px; background: #1f2730; padding: 18px; border-radius: 8px; border: 1px solid #2c3643; transition: border-color .2s ease, transform .2s ease; }
+
+    .list-item:hover { border-color: #00e054; transform: translateY(-2px); }
+
+    .list-info { min-width: 0; }
+
+    .list-title { color: #fff; text-decoration: none; font-size: 1.15em; font-weight: bold; }
+    .list-title:hover { color: #00e054; }
+
+    .list-description { color: #a9b5c2; margin: 7px 0 0 0; line-height: 1.5; }
+
+    .movie-count { color: #8f99a3; font-size: 0.9em; flex-shrink: 0; }
+
+    .empty-text { color: #a9b5c2; }
+
+    .pagination { margin-top: 30px; text-align: center; color: #7f8581; }
+
+    .pagination a { display: inline-block; margin: 0 5px; padding: 6px 10px; color: #8da8c0; border: 1px solid #46515d; border-radius: 4px; text-decoration: none; }
+
+    .pagination a:hover { color: #00e054; border-color: #00e054; }
+
+    .pagination .current { display: inline-block; margin: 0 10px; font-weight: bold; }
+
+    @media (max-width: 600px) {
+        .page-header { align-items: flex-start; flex-direction: column; }
+        .list-item { align-items: flex-start; flex-direction: column; }
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="lists-page">
+
+    <a href="{% url 'user_profile' profile_user.username %}" class="back-link">
+        &laquo; {{ profile_user.username }} profiline dön
+    </a>
+
+
+    <div class="page-header">
+
+        <h1 class="page-title">
+            Özel Listeler
+        </h1>
+
+        {% if request.user == profile_user %}
+
+            <a href="{% url 'custom_list_create' %}" class="new-list-button">
+                + Yeni Liste
+            </a>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="list-container">
+
+        {% for clist in page_obj %}
+
+            <div class="list-item">
+
+                <div class="list-info">
+
+                    <a href="{% url 'custom_list_detail' profile_user.username clist.id %}" class="list-title">
+                        {{ clist.title }}
+                    </a>
+
+                    {% if clist.description %}
+
+                        <p class="list-description">
+                            {{ clist.description|truncatechars:150 }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+                <span class="movie-count">
+                    {{ clist.movie_count }} film
+                </span>
+
+            </div>
+
+        {% empty %}
+
+            <p class="empty-text">
+                Bu kullanıcı henüz özel bir liste oluşturmamış.
+            </p>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% if page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination">
+
+            {% if page_obj.has_previous %}
+
+                <a href="?page=1">
+                    &laquo; İlk
+                </a>
+
+                <a href="?page={{ page_obj.previous_page_number }}">
+                    Önceki
+                </a>
+
+            {% endif %}
+
+
+            <span class="current">
+                Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+
+
+            {% if page_obj.has_next %}
+
+                <a href="?page={{ page_obj.next_page_number }}">
+                    Sonraki
+                </a>
+
+                <a href="?page={{ page_obj.paginator.num_pages }}">
+                    Son &raquo;
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+

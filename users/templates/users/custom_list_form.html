@@ -1,22 +1,68 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>Yeni Liste Oluştur - Boxedlettr</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; line-height: 1.6; background-color: #14171c; color: #c6cacf; }
-        .form-container { background: #1f2730; padding: 25px; border-radius: 8px; border: 1px solid #2c3643; }
-        input[type="text"], textarea { width: 100%; padding: 10px; background: #14171c; border: 1px solid #2c3643; color: #fff; border-radius: 4px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
-        label { display: block; margin-bottom: 5px; color: #00e054; font-weight: bold; }
-        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #0066cc; }
-        .back-link:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <a href="{% url 'user_profile' user.username %}" class="back-link">&laquo; Profile Dön</a>
+{% block title %}
+    {% if custom_list %}
+        Listeyi Düzenle - Boxedlettr
+    {% else %}
+        Yeni Liste Oluştur - Boxedlettr
+    {% endif %}
+{% endblock %}
 
-    <h1 style="color: #fff;">
+
+{% block extra_css %}
+
+<style>
+    .custom-list-form-page { max-width: 600px; margin: 0 auto; }
+
+    .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #0066cc; }
+    .back-link:hover { text-decoration: underline; }
+
+    .page-title { color: #fff; margin-top: 0; }
+
+    .form-container { background: #1f2730; padding: 25px; border-radius: 8px; border: 1px solid #2c3643; }
+
+    .form-container input[type="text"],
+    .form-container textarea {
+        width: 100%;
+        padding: 10px;
+        background: #14171c;
+        border: 1px solid #2c3643;
+        color: #fff;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+        font-family: inherit;
+    }
+
+    .form-container input[type="text"]:focus,
+    .form-container textarea:focus {
+        outline: none;
+        border-color: #00e054;
+    }
+
+    .form-container label { display: block; margin-bottom: 5px; color: #00e054; font-weight: bold; }
+
+    .save-button { background: #00e054; color: #000; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1em; margin-top: 10px; transition: background .2s ease, transform .2s ease; }
+    .save-button:hover { background: #00b341; transform: translateY(-1px); }
+
+    @media (max-width: 600px) {
+        .custom-list-form-page { max-width: 100%; }
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="custom-list-form-page">
+
+    <a href="{% url 'user_profile' user.username %}" class="back-link">
+        &laquo; Profile Dön
+    </a>
+
+
+    <h1 class="page-title">
         {% if custom_list %}
             Listeyi Düzenle
         {% else %}
@@ -24,28 +70,38 @@
         {% endif %}
     </h1>
 
+
     <div class="form-container">
 
         {% if custom_list %}
+
             <form method="POST" action="{% url 'custom_list_update' user.username custom_list.id %}">
+
         {% else %}
+
             <form method="POST" action="{% url 'custom_list_save' %}">
+
         {% endif %}
 
             {% csrf_token %}
+
             {{ form.as_p }}
 
-            <button type="submit" style="background: #00e054; color: #000; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1em; margin-top: 10px;">
+            <button type="submit" class="save-button">
+
                 {% if custom_list %}
                     Değişiklikleri Kaydet
                 {% else %}
                     Listeyi Kaydet
                 {% endif %}
+
             </button>
 
         </form>
 
     </div>
 
-</body>
-</html>
+</div>
+
+{% endblock %}
+```
