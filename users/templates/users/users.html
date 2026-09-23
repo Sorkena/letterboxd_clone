@@ -1,44 +1,107 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kullanıcılar - Boxedlettr</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #14171c; color: #fff; }
-        .btn { display: inline-block; padding: 5px 15px; background: #00e054; color: #171717; text-decoration: none; border-radius: 4px; font-weight: bold; margin-bottom: 20px; }
-        .btn:hover { background: #00b341; }
+{% extends 'base.html' %}
 
-        .user-grid { display: flex; flex-wrap: wrap; gap: 20px; }
-        .user-card { background: #1f2730; padding: 20px; border-radius: 8px; min-width: 200px; text-align: center; border: 1px solid #2c3643; }
-        .user-card h3 { margin-top: 0; color: #fff; font-size: 1.5em; margin-bottom: 5px; }
-        .user-card p { color: #a9b5c2; font-size: 0.9em; margin-bottom: 20px; }
+{% block title %}Kullanıcılar - Boxedlettr{% endblock %}
 
-        .user-link { display: inline-block; padding: 8px 15px; background: #2b7bb9; color: #fff; text-decoration: none; border-radius: 4px; font-size: 0.9em; }
-        .user-link:hover { background: #1e5a8a; }
-    </style>
-</head>
-<body>
+{% block extra_css %}
 
-    <a href="{% url 'home' %}" class="btn">&laquo; Ana Sayfa</a>
+<style>
+    .page-header { opacity: 0; animation: fadeDown 0.6s ease forwards; }
+    .page-header h1 { color: #00e054; margin-top: 0; }
+    .page-header p { color: #a9b5c2; margin-bottom: 30px; }
 
-    <h1 style="color: #00e054;">Boxedlettr Üyeleri</h1>
-    <p style="color: #a9b5c2; margin-bottom: 30px;">Platformumuza kayıtlı tüm kullanıcıları aşağıdan inceleyebilirsiniz.</p>
+    .user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .user-card { background: #1f2730; padding: 25px 20px; border-radius: 8px; text-align: center; border: 1px solid #2c3643; opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease, border-color .2s ease, box-shadow .2s ease; }
+    .user-card.visible { opacity: 1; transform: translateY(0); }
+    .user-card:hover { border-color: #00e054; transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+    .user-card h3 { margin-top: 0; color: #fff; font-size: 1.5em; margin-bottom: 8px; }
+    .user-card p { color: #a9b5c2; font-size: 0.9em; margin-bottom: 20px; }
+    .user-link { display: inline-block; padding: 8px 15px; background: #2b7bb9; color: #fff; text-decoration: none; border-radius: 4px; font-size: 0.9em; transition: background 0.2s; }
+    .user-link:hover { background: #1e5a8a; }
 
-    <div class="user-grid">
-        <!-- Veritabanındaki tüm kullanıcıları döngüye sokuyoruz -->
-        {% for u in all_users %}
-            <div class="user-card">
-                <h3>{{ u.username }}</h3>
-                <p>Katılım: {{ u.date_joined|date:"Y" }}</p>
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
 
-                <!-- Otomatik olarak oluşturulan kendi profillerine giden link -->
-                <a href="{% url 'user_profile' u.username %}" class="user-link">Profili Görüntüle</a>
-            </div>
-        {% empty %}
-            <p>Henüz kayıtlı kullanıcı bulunmuyor.</p>
-        {% endfor %}
-    </div>
+    @media (max-width: 600px) {
+        .user-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
 
-</body>
-</html>
+    @media (max-width: 400px) {
+        .user-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .user-card, .page-header { animation: none; transition: none; opacity: 1; transform: none; }
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+        Boxedlettr Üyeleri
+    </h1>
+
+    <p>
+        Platformumuza kayıtlı tüm kullanıcıları aşağıdan inceleyebilirsiniz.
+    </p>
+
+</div>
+
+
+<div class="user-grid">
+
+    {% for u in all_users %}
+
+        <div class="user-card">
+
+            <h3>
+                {{ u.username }}
+            </h3>
+
+            <p>
+                Katılım: {{ u.date_joined|date:"Y" }}
+            </p>
+
+            <a href="{% url 'user_profile' u.username %}" class="user-link">
+                Profili Görüntüle
+            </a>
+
+        </div>
+
+    {% empty %}
+
+        <p style="color: #a9b5c2; margin-left: 5px;">
+            Henüz kayıtlı kullanıcı bulunmuyor.
+        </p>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    const userCards = document.querySelectorAll('.user-card');
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.12
+    });
+
+    userCards.forEach(card => observer.observe(card));
+</script>
+
+{% endblock %}
+

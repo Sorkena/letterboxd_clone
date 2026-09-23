@@ -9,7 +9,7 @@ from django.views import View
 from users.models import CustomList
 from .forms import ReviewForm, RatingForm
 from .models import Movie, Review, MovieRating
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, F
 from rest_framework import viewsets
 
 class MovieViewSet(viewsets.ViewSet):
@@ -43,11 +43,11 @@ class MovieViewSet(viewsets.ViewSet):
         elif sort_by == 'least_reviewed':
             movies_list = movies_list.annotate(review_count=Count('reviews', distinct=True)).order_by('review_count')
         elif sort_by == 'highest_rated':
-            movies_list = movies_list.filter(ratings__isnull=False).annotate(
-                avg_rating=Avg('ratings__rating')).order_by('-avg_rating')
+            movies_list = movies_list.annotate(avg_rating=Avg('ratings__rating')).order_by(
+                F('avg_rating').desc(nulls_last=True))
         elif sort_by == 'lowest_rated':
-            movies_list = movies_list.filter(ratings__isnull=False).annotate(
-                avg_rating=Avg('ratings__rating')).order_by('avg_rating')
+            movies_list = movies_list.annotate(avg_rating=Avg('ratings__rating')).order_by(
+                F('avg_rating').asc(nulls_last=True))
         else:
             movies_list = movies_list.order_by('-release_date')
 
@@ -87,74 +87,66 @@ class MovieViewSet(viewsets.ViewSet):
             'user_custom_lists': user_custom_lists
         })
 
-    def detail_post(self, request, slug=None, *args, **kwargs):
+    def watchlist_add(self, request, slug=None, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('home')
-
         movie = get_object_or_404(Movie, slug=slug)
+        watchlist, _ = Watchlist.objects.get_or_create(user=request.user)
+        watchlist.movies.add(movie)
+        return redirect('movie_detail', slug=movie.slug)
 
-        if 'watchlist_add' in request.data:
-            watchlist, _ = Watchlist.objects.get_or_create(user=request.user)
-            watchlist.movies.add(movie)
-            return redirect('movie_detail', slug=movie.slug)
+    def watchlist_remove(self, request, slug=None, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('home')
+        movie = get_object_or_404(Movie, slug=slug)
+        watchlist, _ = Watchlist.objects.get_or_create(user=request.user)
+        watchlist.movies.remove(movie)
+        return redirect('movie_detail', slug=movie.slug)
 
-        if 'watchlist_remove' in request.data:
-            watchlist, _ = Watchlist.objects.get_or_create(user=request.user)
-            watchlist.movies.remove(movie)
-            return redirect('movie_detail', slug=movie.slug)
-
-        if 'update_rating' in request.data:
-            current_rating = MovieRating.objects.filter(movie=movie, user=request.user).first()
-            rating_form = RatingForm(request.data, instance=current_rating)
-
-            if rating_form.is_valid():
-                rating = rating_form.save(commit=False)
-                rating.movie = movie
-                rating.user = request.user
-                rating.save()
-                return redirect('movie_detail', slug=movie.slug)
-
-        if 'delete_rating' in request.data:
-            current_rating = MovieRating.objects.filter(movie=movie, user=request.user).first()
-            if current_rating:
-                current_rating.delete()
-            return redirect('movie_detail', slug=movie.slug)
-
-        if 'add_review' in request.data:
-            form = ReviewForm(request.data)
-
-            if form.is_valid():
-                review = form.save(commit=False)
-                review.movie = movie
-                review.user = request.user
-                review.save()
-
-                MovieRating.objects.get_or_create(movie=movie, user=request.user, defaults={'rating': review.rating})
-                return redirect('movie_detail', slug=movie.slug)
-
-        if 'add_to_custom_list' in request.data:
-            list_id = request.data.get('list_id')
-
-            if list_id:
-                custom_list = get_object_or_404(CustomList, id=list_id, user=request.user)
-                custom_list.movies.add(movie)
-
-            return redirect('movie_detail', slug=movie.slug)
-
-        reviews = movie.reviews.all().order_by('-reviewed_at')
+    def update_rating(self, request, slug=None, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('home')
+        movie = get_object_or_404(Movie, slug=slug)
         current_rating = MovieRating.objects.filter(movie=movie, user=request.user).first()
-        watchlist = Watchlist.objects.filter(user=request.user).first()
-        in_watchlist = watchlist.movies.filter(pk=movie.pk).exists() if watchlist else False
+        rating_form = RatingForm(request.data, instance=current_rating)
+        if rating_form.is_valid():
+            rating = rating_form.save(commit=False)
+            rating.movie = movie
+            rating.user = request.user
+            rating.save()
+        return redirect('movie_detail', slug=movie.slug)
 
-        return render(request, 'movies/movie_detail.html', {
-            'movie': movie,
-            'reviews': reviews,
-            'review_form': form if 'form' in locals() else ReviewForm(),
-            'rating_form': RatingForm(instance=current_rating),
-            'current_rating': current_rating,
-            'in_watchlist': in_watchlist,
-            'user_custom_lists': request.user.custom_lists.all()
-        })
+    def delete_rating(self, request, slug=None, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('home')
+        movie = get_object_or_404(Movie, slug=slug)
+        current_rating = MovieRating.objects.filter(movie=movie, user=request.user).first()
+        if current_rating:
+            current_rating.delete()
+        return redirect('movie_detail', slug=movie.slug)
+
+    def add_review(self, request, slug=None, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('home')
+        movie = get_object_or_404(Movie, slug=slug)
+        form = ReviewForm(request.data)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.movie = movie
+            review.user = request.user
+            review.save()
+        MovieRating.objects.get_or_create(movie=movie, user=request.user, defaults={'rating': review.rating})
+        return redirect('movie_detail', slug=movie.slug)
+
+    def add_to_custom_list(self, request, slug=None, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('home')
+        movie = get_object_or_404(Movie, slug=slug)
+        list_id = request.data.get('list_id')
+        if list_id:
+            custom_list = get_object_or_404(CustomList, id=list_id, user=request.user)
+            custom_list.movies.add(movie)
+        return redirect('movie_detail', slug=movie.slug)
 
 class ReviewViewSet(viewsets.ViewSet):
 
@@ -180,20 +172,19 @@ class ReviewViewSet(viewsets.ViewSet):
             'user_custom_lists': request.user.custom_lists.all()
         })
 
-    def edit_post(self, request, slug=None, review_id=None, *args, **kwargs):
+    def update_review(self, request, slug=None, review_id=None, *args, **kwargs):
+        if not request.user.is_authenticated:
+          return redirect('home')
+        movie = get_object_or_404(Movie, slug=slug)
+        review = get_object_or_404( Review, id=review_id, movie=movie, user=request.user )
+        review.content = request.data.get('content', '')
+        review.save()
+        return redirect('movie_detail', slug=movie.slug)
+
+    def delete_review(self, request, slug=None, review_id=None, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('home')
-
         movie = get_object_or_404(Movie, slug=slug)
-        review = get_object_or_404(Review, id=review_id, movie=movie, user=request.user)
-
-        if 'delete_review' in request.data:
-            review.delete()
-            return redirect('movie_detail', slug=movie.slug)
-
-        if 'update_review' in request.data:
-            review.content = request.data.get('content', '')
-            review.save()
-            return redirect('movie_detail', slug=movie.slug)
-
+        review = get_object_or_404( Review, id=review_id, movie=movie, user=request.user )
+        review.delete()
         return redirect('movie_detail', slug=movie.slug)

@@ -1,70 +1,190 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ custom_list.title }} - Boxedlettr</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.6; background-color: #14171c; color: #c6cacf; }
-        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #0066cc; }
-        .back-link:hover { text-decoration: underline; }
-        .movie-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
-        .movie-card { background: #1f2730; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #2c3643; width: 140px; }
-        .movie-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3; object-fit: cover; }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <a href="{% url 'user_profile' list_owner.username %}" class="back-link">&laquo; {{ list_owner.username }} profiline dön</a>
+{% block title %}{{ custom_list.title }} - Boxedlettr{% endblock %}
 
-    <h1 style="color: #00e054; margin-bottom: 5px;">{{ custom_list.title }}</h1>
+{% block extra_css %}
+
+<style>
+    .custom-list-page { max-width: 800px; margin: 0 auto; }
+
+    .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #0066cc; }
+    .back-link:hover { text-decoration: underline; }
+
+    .list-title { color: #00e054; margin: 0 0 5px 0; }
+
+    .list-actions { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+
+    .edit-list-button { display: inline-block; background: #00e054; color: #14171c; padding: 7px 14px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+    .edit-list-button:hover { opacity: 0.9; }
+
+    .delete-list-button { background: #e50914; color: #fff; padding: 8px 14px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .delete-list-button:hover { background: #b80710; }
+
+    .list-description { color: #fff; font-style: italic; font-size: 1.1em; }
+
+    .list-divider { margin: 20px 0; border: 0; border-top: 1px solid #2c3643; }
+
+    .movie-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px; }
+
+    .movie-card { background: #1f2730; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #2c3643; width: 140px; opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease, border-color .2s ease; }
+
+    .movie-card.visible { opacity: 1; transform: translateY(0); }
+
+    .movie-card:hover { border-color: #00e054; }
+
+    .movie-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3; object-fit: cover; display: block; }
+
+    .movie-link { text-decoration: none; color: #fff; }
+
+    .movie-title { margin: 10px 0 0 0; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .remove-button { background: #e50914; color: #fff; padding: 6px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 0.8em; font-weight: bold; }
+    .remove-button:hover { background: #b80710; }
+
+    .empty-text { color: #a9b5c2; width: 100%; }
+
+    @media (max-width: 600px) {
+        .movie-card { width: calc(50% - 8px); }
+    }
+
+    @media (max-width: 400px) {
+        .movie-card { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .movie-card { opacity: 1; transform: none; transition: none; }
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="custom-list-page">
+
+    <a href="{% url 'user_profile' list_owner.username %}" class="back-link">
+        &laquo; {{ list_owner.username }} profiline dön
+    </a>
+
+
+    <h1 class="list-title">
+        {{ custom_list.title }}
+    </h1>
+
 
     {% if user.is_authenticated and user == list_owner %}
-        <div style="margin-bottom: 20px;">
-            <a href="{% url 'custom_list_edit' list_owner.username custom_list.id %}" style="display: inline-block; background: #00e054; color: #14171c; padding: 3px 14px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-right: 8px;">
+
+        <div class="list-actions">
+
+            <a href="{% url 'custom_list_edit' list_owner.username custom_list.id %}" class="edit-list-button">
                 Listeyi Düzenle
             </a>
 
-            <form method="POST" action="{% url 'custom_list_edit' list_owner.username custom_list.id %}" style="display: inline-block;" onsubmit="return confirm('Bu listeyi silmek istediğine emin misin?');">
+            <form method="POST" action="{% url 'custom_list_delete' list_owner.username custom_list.id %}" style="margin: 0;" onsubmit="return confirm('Bu listeyi silmek istediğine emin misin?');">
+
                 {% csrf_token %}
-                <button type="submit" name="delete_list" style="background: #e50914; color: #fff; padding: 8px 14px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+
+                <button type="submit" class="delete-list-button">
                     Listeyi Sil
                 </button>
+
             </form>
+
         </div>
+
     {% endif %}
+
 
     {% if custom_list.description %}
-        <p style="color: #fff; font-style: italic; font-size: 1.1em;">{{ custom_list.description }}</p>
+
+        <p class="list-description">
+            {{ custom_list.description }}
+        </p>
+
     {% endif %}
 
-    <hr style="margin: 20px 0; border: 1px solid #2c3643;">
+
+    <hr class="list-divider">
+
 
     <div class="movie-grid">
+
         {% for movie in movies %}
+
             <div class="movie-card">
-                <a href="{% url 'movie_detail' movie.slug %}" style="text-decoration: none; color: #fff;">
+
+                <a href="{% url 'movie_detail' movie.slug %}" class="movie-link">
+
                     {% if movie.poster_url %}
+
                         <img src="{{ movie.poster_url }}" alt="{{ movie.title }}">
+
                     {% else %}
-                        <div style="width: 100%; aspect-ratio: 2/3; background: #14171c; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 0.8em;">Afiş Yok</div>
+
+                        <div style="width: 100%; aspect-ratio: 2/3; background: #14171c; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 0.8em;">
+                            Afiş Yok
+                        </div>
+
                     {% endif %}
-                    <p style="margin: 10px 0 0 0; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ movie.title }}</p>
+
+                    <p class="movie-title">
+                        {{ movie.title }}
+                    </p>
+
                 </a>
 
+
                 {% if user.is_authenticated and user == list_owner %}
-                    <form method="POST" style="margin-top: 10px;">
+
+                    <form method="POST" action="{% url 'remove_movie' list_owner.username custom_list.id %}" style="margin-top: 10px;">
+
                         {% csrf_token %}
+
                         <input type="hidden" name="movie_id" value="{{ movie.id }}">
-                        <button type="submit" name="remove_movie" style="background: #e50914; color: #fff; padding: 6px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 0.8em; font-weight: bold;">
+
+                        <button type="submit" class="remove-button">
                             Çıkar
                         </button>
+
                     </form>
+
                 {% endif %}
+
             </div>
+
         {% empty %}
-            <p style="color: #a9b5c2; width: 100%;">Bu listede henüz hiç film yok. Filmler sayfasına gidip listeye film eklemeye başlayabilirsiniz!</p>
+
+            <p class="empty-text">
+                Bu listede henüz hiç film yok. Filmler sayfasına gidip listeye film eklemeye başlayabilirsiniz!
+            </p>
+
         {% endfor %}
+
     </div>
 
-</body>
-</html>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    const movieCards = document.querySelectorAll('.movie-card');
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.12
+    });
+
+    movieCards.forEach(card => observer.observe(card));
+</script>
+
+{% endblock %}

@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Boxedlettr{% endblock %}</title>
+
+    <style>
+        /* SIFIRLAMA VE TEMEL AYARLAR */
+        body { font-family: Arial, sans-serif; background-color: #14171c; color: #fff; margin: 0; padding: 0; }
+
+        /* --- KUSURSUZ VE STANDART NAVBAR --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0a0d10; /* Ana gövdeden BİR TIK DAHA KOYU */
+            padding: 20px 40px; /* Eski 40px margin hissini korumak için */
+            border-bottom: 1px solid #2c3643;
+        }
+        .navbar-brand { display: flex; align-items: center; }
+
+        .logo { height: 60px; width: auto; display: block; object-fit: contain; }
+
+        .navbar-menu { display: flex; align-items: center; gap: 10px; }
+        .btn { display: inline-block; padding: 8px 15px; background: #bb2222; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold; border: none; cursor: pointer; font-size: 15px; transition: background 0.2s; }
+        .btn:hover { background: #bb2222; }
+
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { background: none; color: #bb2222; font-size: 16px; border: none; cursor: pointer; font-weight: bold; padding: 10px; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background-color: #283038; min-width: 150px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); border-radius: 4px; border: 1px solid #444; z-index: 99; overflow: hidden; }
+        .dropdown-content a, .dropdown-content button { color: #fff; padding: 12px 16px; text-decoration: none; display: block; width: 100%; text-align: left; background: none; border: none; font-size: 15px; cursor: pointer; box-sizing: border-box; }
+        .dropdown-content a:hover, .dropdown-content button:hover { background-color: #bb2222; color: #000; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        /* --- İÇERİK ALANI (Eski body margin'inin yerini alır) --- */
+        .main-content { padding: 30px 40px; }
+
+        /* NAVBAR MOBİL UYUM */
+        @media (max-width: 700px) {
+            .navbar { padding: 15px 20px; flex-wrap: wrap; gap: 15px; }
+            .main-content { padding: 20px; }
+            .logo { height: 35px; }
+        }
+
+        /* Diğer sayfaların kendi CSS'lerini ekleyeceği yer */
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+    <!-- ÜST MENÜ SADECE BURADA YAZILACAK -->
+    <div class="navbar">
+        <a href="{% url 'home' %}" class="navbar-brand">
+            <img src="{% static 'images/logo.png' %}" alt="Boxedlettr" class="logo">
+        </a>
+        <div class="navbar-menu">
+            <a href="{% url 'movies' %}" class="btn">Filmler</a>
+            <a href="{% url 'users' %}" class="btn">Kullanıcılar</a>
+
+            {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="dropbtn">{{ user.username }} ▼</button>
+                    <div class="dropdown-content">
+                        <a href="{% url 'user_profile' user.username %}">Profilim</a>
+                        <form action="{% url 'logout' %}" method="post" style="margin: 0; padding: 0;">
+                            {% csrf_token %}
+                            <button type="submit">Çıkış Yap</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SAYFALARIN İÇERİĞİ BURAYA GELECEK -->
+    <div class="main-content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Sayfalara özel JavaScript kodları için -->
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

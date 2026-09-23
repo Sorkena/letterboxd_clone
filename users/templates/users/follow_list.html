@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if list_type == 'followers' %}
+        {{ profile_user.username }} - Takipçiler
+    {% else %}
+        {{ profile_user.username }} - Takip Ettikleri
+    {% endif %}
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+    .follow-page { max-width: 700px; margin: 0 auto; }
+
+    .back-link { display: inline-block; margin-bottom: 25px; color: #8da8c0; text-decoration: none; }
+    .back-link:hover { color: #00e054; }
+
+    .follow-title { color: #00e054; margin-top: 0; }
+
+    .user-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+    .user-card { display: flex; align-items: center; justify-content: space-between; gap: 15px; background: #1f2730; border: 1px solid #2c3643; border-radius: 8px; padding: 14px 16px; transition: border-color 0.2s, background 0.2s; }
+    .user-card:hover { border-color: #46515d; background: #242d36; }
+
+    .user-name { color: #fff; text-decoration: none; font-weight: bold; font-size: 1.05em; }
+    .user-name:hover { color: #00e054; }
+
+    .user-action { margin: 0; flex-shrink: 0; }
+
+    .follow-button { background: #00e054; color: #000; padding: 7px 13px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .follow-button:hover { background: #00b341; }
+
+    .unfollow-button { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent; color: #8f99a3; border: 1px solid #46515d; border-radius: 50%; cursor: pointer; font-size: 20px; line-height: 1; padding: 0; transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s; }
+    .unfollow-button:hover { background: #bb2222; color: #fff; border-color: #bb2222; transform: scale(1.06); }
+
+    .empty { color: #8f99a3; margin-top: 20px; }
+
+    @media (max-width: 500px) {
+        .user-card { padding: 12px; }
+        .follow-title { font-size: 1.6em; }
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="follow-page">
+
+    <a href="{% url 'user_profile' profile_user.username %}" class="back-link">
+        &laquo; {{ profile_user.username }} profiline dön
+    </a>
+
+
+    <h1 class="follow-title">
+
+        {% if list_type == 'followers' %}
+            {{ profile_user.username }} - Takipçiler
+        {% else %}
+            {{ profile_user.username }} - Takip Ettikleri
+        {% endif %}
+
+    </h1>
+
+
+    <div class="user-list">
+
+        {% for listed_user in users %}
+
+            <div class="user-card">
+
+                <a href="{% url 'user_profile' listed_user.username %}" class="user-name">
+                    {{ listed_user.username }}
+                </a>
+
+
+                {% if user.is_authenticated and user != listed_user %}
+
+                    {% if listed_user.id in following_ids %}
+
+                        <form method="POST" action="{% url 'unfollow_user' listed_user.username %}" class="user-action">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="unfollow-button" title="Takibi bırak" onclick="return confirm('{{ listed_user.username }} kullanıcısını takipten çıkarmak istediğine emin misin?');">
+                                ×
+                            </button>
+
+                        </form>
+
+                    {% else %}
+
+                        <form method="POST" action="{% url 'follow_user' listed_user.username %}" class="user-action">
+
+                            {% csrf_token %}
+
+                            <button type="submit" class="follow-button">
+                                Takip Et
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+
+        {% empty %}
+
+            <p class="empty">
+
+                {% if list_type == 'followers' %}
+                    Bu kullanıcının henüz takipçisi yok.
+                {% else %}
+                    Bu kullanıcı henüz kimseyi takip etmiyor.
+                {% endif %}
+
+            </p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+

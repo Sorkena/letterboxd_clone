@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Boxedlettr - Film Tercihleri</title>
+
+    <style>
+        body { font-family: Arial, sans-serif; background: #14171c; color: #fff; margin: 0; padding: 40px 20px; }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #1f2730;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #2c3643;
+
+            /* Kutu Animasyonu */
+            opacity: 0;
+            animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        h1 {
+            color: #00e054;
+            margin-top: 0;
+            opacity: 0;
+            animation: slideUp 0.5s ease-out 0.2s forwards;
+        }
+
+        .subtitle {
+            color: #a9b5c2;
+            margin-bottom: 25px;
+            opacity: 0;
+            animation: slideUp 0.5s ease-out 0.3s forwards;
+        }
+
+        #id_genres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; list-style: none; padding: 0; }
+
+        #id_genres li {
+            background: #283038;
+            border: 1px solid #3a4652;
+            border-radius: 7px;
+            padding: 12px;
+            transition: border-color 0.2s, background-color 0.2s;
+
+            /* Her kutucuk başlangıçta görünmez ve animasyona hazır */
+            opacity: 0;
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        /* --- SİHİRLİ KISIM: Tür kutucukları için dalga (staggered) efekti --- */
+        /* Veritabanında tahmini 18-20 tür olduğu için her birine +0.05s gecikme ekliyoruz */
+        #id_genres li:nth-child(1)  { animation-delay: 0.35s; }
+        #id_genres li:nth-child(2)  { animation-delay: 0.40s; }
+        #id_genres li:nth-child(3)  { animation-delay: 0.45s; }
+        #id_genres li:nth-child(4)  { animation-delay: 0.50s; }
+        #id_genres li:nth-child(5)  { animation-delay: 0.55s; }
+        #id_genres li:nth-child(6)  { animation-delay: 0.60s; }
+        #id_genres li:nth-child(7)  { animation-delay: 0.65s; }
+        #id_genres li:nth-child(8)  { animation-delay: 0.70s; }
+        #id_genres li:nth-child(9)  { animation-delay: 0.75s; }
+        #id_genres li:nth-child(10) { animation-delay: 0.80s; }
+        #id_genres li:nth-child(11) { animation-delay: 0.85s; }
+        #id_genres li:nth-child(12) { animation-delay: 0.90s; }
+        #id_genres li:nth-child(13) { animation-delay: 0.95s; }
+        #id_genres li:nth-child(14) { animation-delay: 1.00s; }
+        #id_genres li:nth-child(15) { animation-delay: 1.05s; }
+        #id_genres li:nth-child(16) { animation-delay: 1.10s; }
+        #id_genres li:nth-child(17) { animation-delay: 1.15s; }
+        #id_genres li:nth-child(18) { animation-delay: 1.20s; }
+        #id_genres li:nth-child(19) { animation-delay: 1.25s; }
+        #id_genres li:nth-child(20) { animation-delay: 1.30s; }
+
+        #id_genres li:hover { border-color: #00e054; background: #2f3841; }
+        #id_genres label { color: #fff; cursor: pointer; display: flex; align-items: center; width: 100%; height: 100%; }
+        #id_genres input { accent-color: #00e054; margin-right: 8px; width: 16px; height: 16px; cursor: pointer; }
+
+        .submit-button {
+            background: #00e054;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            padding: 11px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s, transform 0.1s;
+
+            /* Buton şelalenin sonuna doğru (1.2s sonra) ekranda belirir */
+            opacity: 0;
+            animation: slideUp 0.5s ease-out 1s forwards;
+        }
+        .submit-button:hover { background: #00b341; }
+        .submit-button:active { transform: scale(0.97); }
+
+        @media (max-width: 600px) { #id_genres { grid-template-columns: repeat(2, 1fr); } }
+
+        /* --- ANİMASYON KEYFRAME'LERİ --- */
+
+        @keyframes scaleIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* İşletim sisteminde animasyonları kapatanlar (Erişilebilirlik) için */
+        @media (prefers-reduced-motion: reduce) {
+            .container, h1, .subtitle, #id_genres li, .submit-button {
+                opacity: 1 !important;
+                animation: none !important;
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Boxedlettr'e hoş geldin!</h1>
+
+    <p class="subtitle">
+        Birkaç tür seç, sana uygun filmleri ana sayfada gösterelim.
+    </p>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="submit-button">
+            Tercihlerimi Kaydet
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>

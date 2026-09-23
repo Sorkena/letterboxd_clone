@@ -32,3 +32,16 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class Follow(models.Model):
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
+    followed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['follower', 'following'], name='unique_follow')
+        ]
+
+    def __str__(self):
+        return f"{self.follower.username} -> {self.following.username}"
