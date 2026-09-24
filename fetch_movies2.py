@@ -10,7 +10,7 @@ django.setup()
 from movies.models import Movie
 from users.models import Genre
 
-TMDB_API_KEY = 'b69ef646e496500a260bc1ccf689ff0d'
+TMDB_API_KEY = os.environ.get('TMDB_API_KEY')
 BASE_URL = 'https://api.themoviedb.org/3/discover/movie'
 IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
 
