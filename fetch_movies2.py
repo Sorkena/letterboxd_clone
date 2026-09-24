@@ -8,6 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'letterboxd.settings')
 django.setup()
 
 from movies.models import Movie
+from users.models import Genre
 
 TMDB_API_KEY = 'b69ef646e496500a260bc1ccf689ff0d'
 BASE_URL = 'https://api.themoviedb.org/3/discover/movie'
@@ -51,6 +52,13 @@ def fetch_movies_from_api(pages_to_fetch=5):
                     if det_resp.status_code == 200:
                         det_data = det_resp.json()
 
+                        genres_data = det_data.get('genres', [])
+
+                        for genre in genres_data:
+                            genre_name = genre.get('name', '').strip()
+
+                            if genre_name:
+                                Genre.objects.get_or_create(name=genre_name)
                         genres_str = ", ".join([g['name'] for g in det_data.get('genres', [])])
                         studio_str = ", ".join([s['name'] for s in det_data.get('production_companies', [])])
                         country_str = ", ".join([c['name'] for c in det_data.get('production_countries', [])])
